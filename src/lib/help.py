@@ -12,6 +12,8 @@
 # NO WARRANTY IS PROVIDED WITH THIS SOFTWARE. I AM NOT RELIABLE FOR ANY DAMAGES.
 # THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY AND LIABILITY OF ANY KIND.
 
+from lib.logger import logger
+
 class help:
     routes = []
     method = []
@@ -23,6 +25,7 @@ def add_help(route, method, description, returns):
     help.method.append(method)
     help.description.append(description)
     help.returns.append(returns)
+    logger.log("help", f"Added help for {route}")
 
 def get_help(route):
     index = help.routes.index(route)

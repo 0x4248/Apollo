@@ -15,44 +15,22 @@
 
 from flask import Flask, jsonify, request
 from asyncio import run
-import importlib
+
 import logging
 import json
 
 
 from lib.logger import logger
+from lib.config import CONFIG
+from lib.modules import apolloModule
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 del log
 
-class apolloModule:
-    modulesLoaded = []
-    blueprintNames = []
-    def load_module(module_name, blueprint_name):
-        logger.log("Main -> apolloModule", f"Loading module {module_name}")
-        module = importlib.import_module(module_name)
-        blueprint = getattr(module, blueprint_name)
-        app.register_blueprint(blueprint)
-        apolloModule.modulesLoaded.append(module_name)
-        apolloModule.blueprintNames.append(blueprint_name)
-    def unload_module(module_name):
-        apolloModule.modulesLoaded.remove(module_name)
-        apolloModule.blueprintNames.remove(app.blueprints[module_name])
-        app.blueprints.pop(module_name)
-        del module_name
-
-    def reload_all():               
-        for module in apolloModule.modulesLoaded:
-            apolloModule.unload_module(module)
-            apolloModule.load_module(module, 
-                                    apolloModule.blueprintNames[
-                                        apolloModule.modulesLoaded.index(module)
-                                    ])
-
-apolloModule.load_module("modules.ping", "ping_bp")
-apolloModule.load_module("modules.help", "help_bp")
+apolloModule.load_module("modules.ping", "ping_bp", app)
+apolloModule.load_module("modules.help", "help_bp", app)
 
 @app.route('/')
 async def index():
@@ -64,11 +42,10 @@ async def ping():
         log = json.load(f)
     return jsonify(log)
 
-
 @app.before_request
 async def log_request_info():
     logger.log("Main", f"Request to {request.path}")
 
 if __name__ == '__main__':
-    app.run(port=5000)
-    logger.log("Main", "Apollo API started on http://localhost:5000")
+    logger.log("Main", f"Apollo API started on http://localhost:{CONFIG.PORT}")
+    app.run(port=CONFIG.PORT, debug=CONFIG.DEBUG)
