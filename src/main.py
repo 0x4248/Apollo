@@ -14,6 +14,7 @@
 # THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY AND LIABILITY OF ANY KIND.
 
 from flask import Flask, jsonify, request
+from asyncio import run
 import importlib
 import logging
 import json
@@ -54,19 +55,20 @@ apolloModule.load_module("modules.ping", "ping_bp")
 apolloModule.load_module("modules.help", "help_bp")
 
 @app.route('/')
-def debug_modules():
+async def index():
     return jsonify({"modules": apolloModule.modulesLoaded}) 
 
 @app.route('/log')
-def ping():
+async def ping():
     with open("data/log.json", "r") as f:
         log = json.load(f)
     return jsonify(log)
 
 
 @app.before_request
-def log_request_info():
+async def log_request_info():
     logger.log("Main", f"Request to {request.path}")
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(port=5000)
+    logger.log("Main", "Apollo API started on http://localhost:5000")

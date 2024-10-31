@@ -20,6 +20,6 @@ ping_bp = Blueprint('ping', __name__)
 
 add_help("/api/ping", "GET", "Pings the server.", "String: Pong!")
 @ping_bp.route('/api/ping')
-def ping():
+async def ping():
     return "Pong!"
 

@@ -21,6 +21,6 @@ help_bp = Blueprint('help', __name__)
 
 add_help("/help", "GET", "Show all routes", "JSON: Returns all routes in the API.")
 @help_bp.route('/help')
-def help():
+async def help():
     return jsonify(get_all_help())
     
