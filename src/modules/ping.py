@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Apollo API
+# A multi-purpose API.
 #
 # src/modules/ping.py
 #
@@ -12,14 +13,13 @@
 # NO WARRANTY IS PROVIDED WITH THIS SOFTWARE. I AM NOT RELIABLE FOR ANY DAMAGES.
 # THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY AND LIABILITY OF ANY KIND.
 
+from fastapi import APIRouter
+from fastapi.responses import PlainTextResponse
+from lib.route_record import record_route
 
-from flask import Blueprint, jsonify
-from lib.help import add_help
+router = APIRouter()
 
-ping_bp = Blueprint('ping', __name__)
-
-add_help("/api/ping", "GET", "Pings the server.", "String: Pong!")
-@ping_bp.route('/api/ping')
+record_route("/ping", "ping", "GET", "Pings the server.")
+@router.get("/ping")
 async def ping():
-    return "Pong!"
-
+	return PlainTextResponse("pong")

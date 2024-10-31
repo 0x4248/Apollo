@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 # Apollo API
+# A multi-purpose API.
 #
 # src/lib/logger.py
 #
-# COPYRIGHT NOTICE
+# COPYRIGHT NOTICE              
 # Copyright (C) 2024 0x4248 and contributors
 # This file and software is licenced under the GNU General Public License v3.0. 
 # Redistribution of this file and software is permitted under the terms of the 
@@ -12,41 +13,46 @@
 # NO WARRANTY IS PROVIDED WITH THIS SOFTWARE. I AM NOT RELIABLE FOR ANY DAMAGES.
 # THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY AND LIABILITY OF ANY KIND.
 
+import traceback
 import datetime
 import json
+import os
 
-class log_levels:
-    LOG = 0
-    INFO = 1
-    WARN = 2
-    ERROR = 3
-    CRITICAL = 4
-    
-def update_log_record(module, message, level):
-    try:
-        with open("data/log.json", "r") as f:
-            log = json.load(f)
-    except:
-        log = []
+def logs_init() -> None:
+	if not os.path.exists("data/logs"):
+		os.makedirs("data/logs")
 
-    log.append([str(datetime.datetime.now()), level, module, message])
+	if not os.path.exists("data/logs/log.csv"):
+		with open("data/logs/log.csv", "w") as f:
+			f.write("time,level,caller,message\n")
 
-    with open("data/log.json", "w") as f:
-        json.dump(log, f, indent=4)
-    
-class logger:
-    def log(module, message):
-        print(f"[LOG] {module}: {message}")
-        update_log_record(module, message, log_levels.LOG)
-    
-    def error(module, message):
-        print(f"[ERROR] {module}: {message}")
-        update_log_record(module, message, log_levels.ERROR)
-    
-    def warn(module, message):
-        print(f"[WARN] {module}: {message}")
-        update_log_record(module, message, log_levels.WARN)
-    
-    def info(module, message):
-        print(f"[INFO] {module}: {message}")
-        update_log_record(module, message, log_levels.INFO)
+def handle_log(caller=None, msg=None, level=None) -> None:
+	if caller is None:
+		caller = traceback.extract_stack(None, 2)[0].name
+	time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+	log_output = f"{time},{level},{caller},{msg}"
+
+	with open("data/logs/log.csv", "a") as f:
+		f.write(log_output)
+		f.write("\n")
+	
+	print(f"[{time}] {level}: {caller}: {msg}")
+
+def log(caller=None, msg=None) -> None:
+	handle_log(caller, msg, "LOG")
+
+def error(caller=None, msg=None) -> None:
+	handle_log(caller, msg, "ERROR")
+
+def debug(caller=None, msg=None) -> None:
+	handle_log(caller, msg, "DEBUG")
+
+def warn(caller=None, msg=None) -> None:
+	handle_log(caller, msg, "WARN")
+
+def info(caller=None, msg=None) -> None:
+	handle_log(caller, msg, "INFO")
+
+def critical(caller=None, msg=None) -> None:
+	handle_log(caller, msg, "CRITICAL")

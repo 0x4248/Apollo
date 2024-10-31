@@ -13,39 +13,33 @@
 # NO WARRANTY IS PROVIDED WITH THIS SOFTWARE. I AM NOT RELIABLE FOR ANY DAMAGES.
 # THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY AND LIABILITY OF ANY KIND.
 
-from flask import Flask, jsonify, request
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from asyncio import run
+import uvicorn
+import importlib
 
-import logging
-import json
+from lib.route_record import get_routes
+import lib.logger as logger
 
+app = FastAPI()
 
-from lib.logger import logger
-from lib.config import CONFIG
-from lib.modules import apolloModule
+modules = ["modules.ping"]
 
-app = Flask(__name__)
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-del log
+for module in modules:
+    mod = importlib.import_module(module)
+    app.include_router(mod.router)
 
-apolloModule.load_module("modules.ping", "ping_bp", app)
-apolloModule.load_module("modules.help", "help_bp", app)
+@app.get("/")
+async def root():
+    return get_routes()
 
-@app.route('/')
-async def index():
-    return jsonify({"modules": apolloModule.modulesLoaded}) 
+@app.middleware("http")
+async def log_request_info(request: Request, call_next):
+    logger.info("Request", f"Request made to {request.url}")
+    response = await call_next(request)
+    return response
 
-@app.route('/log')
-async def ping():
-    with open("data/log.json", "r") as f:
-        log = json.load(f)
-    return jsonify(log)
-
-@app.before_request
-async def log_request_info():
-    logger.log("Main", f"Request to {request.path}")
-
-if __name__ == '__main__':
-    logger.log("Main", f"Apollo API started on http://localhost:{CONFIG.PORT}")
-    app.run(port=CONFIG.PORT, debug=CONFIG.DEBUG)
+if __name__ == "__main__":
+    logger.logs_init()
+    uvicorn.run(app, host="0.0.0.0", port=8000, server_header="Apollo API", log_level="error")
