@@ -2,7 +2,7 @@
 # Apollo API
 # A multi-purpose API.
 #
-# src/modules/ping.py
+# src/modules/http_codes.py
 #
 # COPYRIGHT NOTICE
 # Copyright (C) 2024 0x4248 and contributors
@@ -15,10 +15,15 @@
 
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
+from fastapi import status
 
 
 router = APIRouter()
 
-@router.get("/ping", description="Pings the server.")
-async def ping():
-	return PlainTextResponse("pong")
+@router.get("/codes/200", description="Returns a 200 OK response.")
+async def code_200():
+	return PlainTextResponse("200 OK")
+
+@router.get("/codes/201", description="Returns a 201 Created response.")
+async def code_201():
+	return PlainTextResponse("201 Created")

@@ -14,12 +14,12 @@
 # THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY AND LIABILITY OF ANY KIND.
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from asyncio import run
 import uvicorn
 import importlib
+import time
 
-from lib.route_record import get_routes
 import lib.logger as logger
 
 app = FastAPI()
@@ -32,14 +32,20 @@ for module in modules:
 
 @app.get("/")
 async def root():
-    return get_routes()
+    return str(app.routes)
 
 @app.middleware("http")
 async def log_request_info(request: Request, call_next):
     logger.info("Request", f"Request made to {request.url}")
+    pre_reqtime = time.time()
     response = await call_next(request)
+    post_reqtime = time.time()
+    response.headers["server"] = "Apollo"
+    response.headers["apollo-version"] = "0.1"
+    response.headers["compute-time"] = str(post_reqtime - pre_reqtime)
+
     return response
 
 if __name__ == "__main__":
     logger.logs_init()
-    uvicorn.run(app, host="0.0.0.0", port=8000, server_header="Apollo API", log_level="error")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
