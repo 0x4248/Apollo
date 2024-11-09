@@ -20,10 +20,6 @@ from fastapi import status
 
 router = APIRouter()
 
-@router.get("/codes/200", description="Returns a 200 OK response.")
-async def code_200():
-	return PlainTextResponse("200 OK")
-
-@router.get("/codes/201", description="Returns a 201 Created response.")
-async def code_201():
-	return PlainTextResponse("201 Created")
+@router.get("/code/{code}", description="Returns the HTTP status code.")
+async def codes(code: int):
+	return PlainTextResponse(str(code), status_code=code)

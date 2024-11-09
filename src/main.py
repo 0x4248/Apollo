@@ -24,7 +24,7 @@ import lib.logger as logger
 
 app = FastAPI()
 
-modules = ["modules.ping"]
+modules = ["modules.ping", "modules.http_codes"]
 
 for module in modules:
     mod = importlib.import_module(module)
